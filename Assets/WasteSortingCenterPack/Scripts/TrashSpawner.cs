@@ -4,13 +4,16 @@ using UnityEngine;
 public class TrashSpawner : MonoBehaviour
 {
     [Header("Réglages")]
-    public GameObject[] trashPrefabs; // Liste de tes déchets
-    public float spawnInterval = 2.0f; // Temps entre chaque apparition (en secondes)
-    public float forceEjection = 2.0f; // Force pour pousser l'objet vers la gauche (optionnel)
+    public GameObject[] trashPrefabs;
+    public float spawnInterval = 2.0f;
+    public float forceEjection = 2.0f;
+
+    // --- NOUVEAU : L'interrupteur ---
+    // Si c'est true, ça spawn. Si c'est false, ça attend.
+    public bool machineActive = false;
 
     private void Start()
     {
-        // Lance la boucle infinie d'apparition
         StartCoroutine(SpawnRoutine());
     }
 
@@ -18,33 +21,35 @@ public class TrashSpawner : MonoBehaviour
     {
         while (true)
         {
-            SpawnTrash();
-            // Attend le temps défini avant de recommencer
+            // On attend le délai quoiqu'il arrive
             yield return new WaitForSeconds(spawnInterval);
+
+            // On vérifie si la machine est allumée AVANT de faire apparaître l'objet
+            if (machineActive == true)
+            {
+                SpawnTrash();
+            }
         }
     }
 
     void SpawnTrash()
     {
-        // 1. Vérifie s'il y a des prefabs dans la liste
         if (trashPrefabs.Length == 0) return;
 
-        // 2. Choisit un objet au hasard dans la liste
         int randomIndex = Random.Range(0, trashPrefabs.Length);
         GameObject selectedPrefab = trashPrefabs[randomIndex];
 
-        // 3. Crée l'objet à la position du Spawner
-        GameObject newTrash = Instantiate(selectedPrefab, transform.position, Random.rotation);
+        // Rotation aléatoire sur l'axe Y (comme on avait dit)
+        Quaternion randomY = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
 
-        // 4. (Optionnel) Ajoute une petite poussée vers la gauche si nécessaire
-        // Assure-toi que l'axe -transform.right correspond bien à la gauche dans ta scène
+        GameObject newTrash = Instantiate(selectedPrefab, transform.position, randomY);
+
         Rigidbody rb = newTrash.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.AddForce(-transform.right * forceEjection, ForceMode.Impulse);
+            rb.centerOfMass = new Vector3(0, -0.5f, 0); // Stabilité
+            rb.linearVelocity = Vector3.zero;
+            rb.AddForce(-transform.right * forceEjection, ForceMode.VelocityChange);
         }
-
-
-
     }
 }
