@@ -4,18 +4,36 @@ public class ZonePoubelle : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        // RÈGLE DE LA POUBELLE : Seul le plastique doit entrer ici.
-
+        // CAS 1 : C'est du PLASTIQUE (C'est bien !)
         if (other.CompareTag("Plastique"))
         {
-            // C'est bien du plastique ! Bravo !
-            GestionScore.instance.AjouterPoints(1);
+            // +1 Point
+            if (GestionScore.instance != null) GestionScore.instance.AjouterPoints(1);
+
+            // Valide la Tâche n°0 ("Jeter une bouteille")
+            if (GestionTuto.instance != null) GestionTuto.instance.ValiderTache(0);
+
             Destroy(other.gameObject);
         }
-        else if (other.CompareTag("Carton") || other.CompareTag("Trash"))
+
+        // CAS 2 : C'est du CARTON ou NORMAL (C'est une erreur !)
+        // Le joueur apprend qu'il ne faut pas jeter le carton ici.
+        else if (other.CompareTag("Carton") || other.CompareTag("Normal"))
         {
-            // Aïe ! On a jeté du carton/déchet normal dans la poubelle plastique !
-            GestionScore.instance.AjouterPoints(-1);
+            // -1 Point (Punition)
+            if (GestionScore.instance != null) GestionScore.instance.AjouterPoints(-1);
+
+            // Valide la Tâche n°1 ("Jeter une brique de carton")
+            // On valide la tâche car le joueur a réalisé l'action demandée (même si c'est une bêtise !)
+            if (GestionTuto.instance != null) GestionTuto.instance.ValiderTache(1);
+
+            Destroy(other.gameObject);
+        }
+
+        // Sécurité pour les autres objets (Trash, etc.)
+        else
+        {
+            if (GestionScore.instance != null) GestionScore.instance.AjouterPoints(-1);
             Destroy(other.gameObject);
         }
     }
