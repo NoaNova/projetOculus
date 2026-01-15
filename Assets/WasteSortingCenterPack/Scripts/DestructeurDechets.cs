@@ -2,18 +2,11 @@ using UnityEngine;
 
 public class DestructeurDechets : MonoBehaviour
 {
-    // Ajoute cette ligne pour voir la case dans l'Inspector
-    public ParticleSystem particules;
-
     private void OnTriggerEnter(Collider other)
     {
-        // On lance les particules
-        if (particules != null)
-        {
-            particules.Play();
-        }
-
-        // On détruit l'objet
+        // On détruit simplement tout ce qui arrive au bout du tapis.
+        // Pas de points, pas de validation de tâche.
+        // C'est juste pour que les objets ne tombent pas à l'infini.
         Destroy(other.gameObject);
     }
 }

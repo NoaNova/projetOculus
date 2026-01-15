@@ -1,74 +1,64 @@
 using UnityEngine;
-using TMPro;
-using UnityEngine.SceneManagement; // Utile si tu veux un bouton "Rejouer"
+using UnityEngine.UI; // Nécessaire si tu utilises l'UI standard
+using TMPro; // Nécessaire si tu utilises TextMeshPro
 
 public class GestionTuto : MonoBehaviour
 {
     public static GestionTuto instance;
 
-    [Header("--- UI Tâches ---")]
-    // Ton tableau actuel avec les 5 textes
-    public TextMeshProUGUI[] lesTaches;
+    [Header("Configuration")]
+    public int nombreTotalTaches = 2; // Mets ici le nombre de tâches (ex: 2 pour Bouteille + Carton)
 
-    [Header("--- Écran de Fin ---")]
-    // Glisse ton Canvas de fin (ou un Panel) ici dans l'inspecteur
-    public GameObject ecranFin;
+    [Header("Interface")]
+    public GameObject ecranBravo; // La case pour glisser ton Canvas "Ecran_Fin"
 
-    // Compteur interne pour savoir où on en est
-    private int nombreTachesFinies = 0;
+    // Pour éviter de gagner deux fois la même tâche
+    private bool[] tachesRealisees;
+    private int compteur = 0;
 
-    void Awake()
+    private void Awake()
     {
         instance = this;
+        tachesRealisees = new bool[nombreTotalTaches]; // On prépare le tableau
 
-        // On s'assure que l'écran de fin est caché au démarrage
-        if (ecranFin != null)
-            ecranFin.SetActive(false);
+        // Sécurité : On s'assure que l'écran Bravo est éteint au début
+        if (ecranBravo != null)
+            ecranBravo.SetActive(false);
     }
 
-    public void ValiderTache(int numero)
+    public void ValiderTache(int indexTache)
     {
-        // On vérifie si la tâche n'est pas déjà validée pour ne pas compter deux fois
-        if (numero >= 0 && numero < lesTaches.Length && lesTaches[numero].color != Color.green)
+        // 1. On vérifie si l'index est valide
+        if (indexTache < 0 || indexTache >= nombreTotalTaches) return;
+
+        // 2. Si cette tâche est déjà faite, on arrête (on ne la compte pas deux fois)
+        if (tachesRealisees[indexTache] == true) return;
+
+        // 3. On valide la tâche
+        tachesRealisees[indexTache] = true; // On coche la case dans la mémoire
+        compteur++; // On ajoute 1 au score de progression
+
+        Debug.Log("Tâche " + indexTache + " validée ! Progression : " + compteur + "/" + nombreTotalTaches);
+
+        // --- ICI TU PEUX AJOUTER TON CODE POUR RAYER LE TEXTE (Barre) ---
+        // Exemple : lignesDeRayure[indexTache].SetActive(true);
+        // ---------------------------------------------------------------
+
+        // 4. VERIFICATION DE VICTOIRE
+        if (compteur >= nombreTotalTaches)
         {
-            // 1. Visuel : Vert et Barré
-            lesTaches[numero].color = Color.green;
-            lesTaches[numero].fontStyle = FontStyles.Strikethrough;
-
-            // 2. Logique : On incrémente le compteur
-            nombreTachesFinies++;
-
-            // 3. Vérification : Est-ce que tout est fini ?
-            VerifierFinJeu();
+            AfficherEcranFin();
         }
     }
 
-    void VerifierFinJeu()
+    void AfficherEcranFin()
     {
-        if (nombreTachesFinies >= lesTaches.Length)
+        Debug.Log("Tuto Terminé ! BRAVO !");
+        if (ecranBravo != null)
         {
-            AfficherEcranVictoire();
+            ecranBravo.SetActive(true); // On allume le Canvas
+
+            // Petit bonus : Jouer un son ici si tu veux
         }
-    }
-
-    void AfficherEcranVictoire()
-    {
-        if (ecranFin != null)
-        {
-            ecranFin.SetActive(true);
-
-            // Si tu es en VR, l'écran apparaîtra là où tu l'as placé.
-            // Si tu es sur PC (souris), on débloque le curseur :
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            Debug.Log("Bravo ! Toutes les tâches sont terminées.");
-        }
-    }
-
-    // Fonction optionnelle pour un bouton "Recommencer" sur ton écran de fin
-    public void Rejouer()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
