@@ -1,77 +1,58 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro; // Nécessaire pour TextMeshPro
+using TMPro; // Nécessaire pour modifier le texte
 
-// Ajoute automatiquement un AudioSource si tu n'en as pas
-[RequireComponent(typeof(AudioSource))]
 public class GestionTuto : MonoBehaviour
 {
     public static GestionTuto instance;
 
-    [Header("--- CONFIGURATION ---")]
-    public int nombreTotalTaches = 2;
+    [Header("Configuration")]
+    // Ta liste qui contient tes textes
+    public TextMeshProUGUI[] lesTaches;
 
-    [Header("--- VISUEL TACHES (Tableaux) ---")]
-    // Glisse tes textes (Bouteille / Carton) ici
-    public TextMeshProUGUI[] textesTaches;
+    [Header("Ecran de Fin")]
+    public GameObject ecranBravo; // La case pour glisser ton Canvas "Bravo"
 
-    // Glisse tes images de barres (si tu en as) ici
-    public GameObject[] lignesDeRayure;
-
-    [Header("--- FIN DU JEU ---")]
-    public GameObject ecranBravo; // Le Canvas de fin
-    public AudioClip sonVictoire; // Le son "Win"
-
-    private AudioSource audioSource;
-    private bool[] tachesRealisees;
+    // Mémoire interne pour savoir quelles tâches sont finies
+    private bool[] tachesFaites;
     private int compteur = 0;
 
-    private void Awake()
+    void Awake()
     {
         instance = this;
-        tachesRealisees = new bool[nombreTotalTaches];
-        audioSource = GetComponent<AudioSource>();
 
-        // Sécurité : On cache l'écran de fin au début
-        if (ecranBravo != null) ecranBravo.SetActive(false);
+        // On initialise la mémoire selon le nombre de textes que tu as mis
+        tachesFaites = new bool[lesTaches.Length];
 
-        // Sécurité : On cache toutes les barres de rayure au début
-        foreach (GameObject barre in lignesDeRayure)
+        // On cache l'écran Bravo au lancement du jeu
+        if (ecranBravo != null)
         {
-            if (barre != null) barre.SetActive(false);
+            ecranBravo.SetActive(false);
         }
     }
 
-    public void ValiderTache(int indexTache)
+    // Fonction à appeler pour valider une étape
+    public void ValiderTache(int numero)
     {
-        // Vérifications de sécurité
-        if (indexTache < 0 || indexTache >= nombreTotalTaches) return;
-        if (tachesRealisees[indexTache] == true) return;
+        // 1. Sécurités de base
+        if (numero < 0 || numero >= lesTaches.Length) return;
 
-        // Validation logique
-        tachesRealisees[indexTache] = true;
+        // 2. Si la tâche est DEJA faite, on ne fait rien (pour ne pas compter les points en double)
+        if (tachesFaites[numero] == true) return;
+
+        // 3. On valide la tâche
+        tachesFaites[numero] = true;
         compteur++;
 
-        // --- PARTIE VISUELLE (Ce qui manquait) ---
-
-        // 1. Changer la couleur du texte en VERT
-        if (indexTache < textesTaches.Length && textesTaches[indexTache] != null)
+        // 4. On change le visuel (Ton code d'origine)
+        if (lesTaches[numero] != null)
         {
-            textesTaches[indexTache].color = Color.green;
-            // Optionnel : Ajouter un effet de style (Gras, italique...)
-            // textesTaches[indexTache].fontStyle = FontStyles.Strikethrough; 
+            lesTaches[numero].color = Color.green;
+            lesTaches[numero].fontStyle = FontStyles.Strikethrough;
         }
 
-        // 2. Activer la barre de rayure (si tu utilises des images)
-        if (indexTache < lignesDeRayure.Length && lignesDeRayure[indexTache] != null)
-        {
-            lignesDeRayure[indexTache].SetActive(true);
-        }
-
-        // -----------------------------------------
-
-        // Vérification Victoire
-        if (compteur >= nombreTotalTaches)
+        // 5. On vérifie si tout est fini
+        // Si le compteur est égal au nombre total de textes dans ta liste...
+        if (compteur >= lesTaches.Length)
         {
             AfficherEcranFin();
         }
@@ -79,7 +60,9 @@ public class GestionTuto : MonoBehaviour
 
     void AfficherEcranFin()
     {
-        if (ecranBravo != null) ecranBravo.SetActive(true);
-        if (audioSource != null && sonVictoire != null) audioSource.PlayOneShot(sonVictoire);
+        if (ecranBravo != null)
+        {
+            ecranBravo.SetActive(true); // On allume l'écran
+        }
     }
 }
