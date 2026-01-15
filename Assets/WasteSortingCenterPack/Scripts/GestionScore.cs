@@ -12,35 +12,30 @@ public class GestionScore : MonoBehaviour
     {
         instance = this;
     }
-
     public void AjouterPoints(int points)
     {
-        // 1. On modifie le score
+        // On modifie le score
         score += points;
-
-        // 2. LA SÉCURITÉ (Clamp)
-        // Si le score est passé en dessous de 0, on le force à 0.
+        //pas de score  négatif
         if (score < 0)
         {
             score = 0;
         }
-
-        // 3. On met à jour l'affichage
+        // On met à jour l'affichage
         MiseAJourTexte();
 
-        // 4. Vérification Tuto (Tâche 2 : Atteindre 10 pts)
+        // Vérification Tuto (Tâche 2 : Atteindre 10 pts)
         if (score >= 10)
         {
             if (GestionTuto.instance != null) GestionTuto.instance.ValiderTache(2);
         }
     }
-
     void MiseAJourTexte()
     {
         if (texteScore != null)
         {
             texteScore.text = "Score : " + score;
-            // Comme le score ne peut plus être négatif, on le laisse toujours blanc
+            //couleur du texte
             texteScore.color = Color.white;
         }
     }
