@@ -8,8 +8,8 @@ public class TrashSpawner : MonoBehaviour
     public float spawnInterval = 2.0f;
     public float forceEjection = 2.0f;
 
-    // --- NOUVEAU : L'interrupteur ---
-    // Si c'est true, ça spawn. Si c'est false, ça attend.
+ 
+    // Si True : Spawn. Si False : Attend.
     public bool machineActive = false;
 
     private void Start()
@@ -24,14 +24,13 @@ public class TrashSpawner : MonoBehaviour
             // On attend le délai quoiqu'il arrive
             yield return new WaitForSeconds(spawnInterval);
 
-            // On vérifie si la machine est allumée AVANT de faire apparaître l'objet
+            // On vérifie si la machine est allumée avant de faire apparaître l'objet
             if (machineActive == true)
             {
                 SpawnTrash();
             }
         }
     }
-
     void SpawnTrash()
     {
         if (trashPrefabs.Length == 0) return;

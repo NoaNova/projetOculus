@@ -2,14 +2,12 @@ using UnityEngine;
 
 public class TreadmillForce : MonoBehaviour
 {
-
     public float currentSpeed { get; private set; }
 
     private void Start()
     {
         SetSpeed(0.5f);
     }
-
     private void OnTriggerStay(Collider other)
     {
         Rigidbody body = other.attachedRigidbody;
@@ -22,9 +20,6 @@ public class TreadmillForce : MonoBehaviour
             body.linearVelocity = velocity;
         }
     }
-
-
-
     public void SetSpeed(float speed)
     {
         currentSpeed = speed;

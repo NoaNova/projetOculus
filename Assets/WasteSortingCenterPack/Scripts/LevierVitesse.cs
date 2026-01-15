@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections; // Nécessaire pour les Coroutines
+using System.Collections;
 
 public class LevierVitesse : MonoBehaviour
 {
@@ -16,14 +16,13 @@ public class LevierVitesse : MonoBehaviour
 
     [Header("--- Réglages Urgence ---")]
     public float seuilDeclenchement = 0.04f;
-    public float tempsAvantRelance =3.0f; // Temps d'attente
+    public float tempsAvantRelance =3.0f; 
 
     private float ratioDepart;
     private Vector3 positionUrgenceDepart;
     private bool aBougeVitesse = false;
     private bool aBougeUrgence = false;
 
-    // Nouveau : pour savoir si on est en mode "Arrêt d'urgence"
     private bool estEnArretUrgence = false;
 
     void Start()
@@ -39,35 +38,34 @@ public class LevierVitesse : MonoBehaviour
     {
         if (levierVitesse == null || poigneeUrgence == null) return;
 
-        // 1. Calcul de la vitesse voulue par le levier de vitesse
+        // levier vitesse
         float angleActuel = levierVitesse.angle;
         float ratioActuel = Mathf.InverseLerp(angleArret, angleMax, angleActuel);
         float vitesseTheorique = ratioActuel * vitesseMax;
 
-        // Tuto levier vitesse
+        // tuto levier vitesse
         if (!aBougeVitesse && Mathf.Abs(ratioActuel - ratioDepart) > 0.05f)
         {
             if (GestionTuto.instance != null) GestionTuto.instance.ValiderTache(4);
             aBougeVitesse = true;
         }
 
-        // 2. Gestion de l'urgence
+        // arrêt d'urgence
         float distanceParcourue = Vector3.Distance(poigneeUrgence.localPosition, positionUrgenceDepart);
         float vitesseFinale = vitesseTheorique;
 
-        // Déclenchement de l'arrêt
+        // arrêt déclanché
         if (distanceParcourue > seuilDeclenchement && !estEnArretUrgence)
         {
             StartCoroutine(SequenceArretUrgence());
         }
 
-        // Si on est en arrêt d'urgence, la vitesse est forcée à 0
+        // en arrêt d'urgence la vitesse est forcée à 0
         if (estEnArretUrgence)
         {
             vitesseFinale = 0;
         }
 
-        // 3. Application aux tapis et spawner
         foreach (var t in tapis) if (t != null) t.SetSpeed(vitesseFinale);
 
         if (spawner != null)
@@ -76,23 +74,21 @@ public class LevierVitesse : MonoBehaviour
         }
     }
 
-    // La Coroutine qui gère le délai
     IEnumerator SequenceArretUrgence()
     {
         estEnArretUrgence = true;
 
-        // Validation Tuto
+        // partie tuto
         if (!aBougeUrgence)
         {
             if (GestionTuto.instance != null) GestionTuto.instance.ValiderTache(3);
             aBougeUrgence = true;
         }
 
-        // Attente de 5 secondes
+        // attente
         yield return new WaitForSeconds(tempsAvantRelance);
 
-        // Retour à la normale : on remet la poignée visuellement à sa place
-        // Note : Si c'est un objet physique (VR), il faudra peut-être désactiver le grab temporairement
+        // retour à la normale : on remet la poignée à sa place
         poigneeUrgence.localPosition = positionUrgenceDepart;
 
         estEnArretUrgence = false;
